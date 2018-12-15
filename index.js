@@ -23,7 +23,8 @@ const main = async () => {
   while (true) {
     const temperature = await readTemperature()
     const humidity = await readHumidity()
-    console.log('temperature|humidity ', temperature, humidity)
+    const now = Date.now()
+    console.log(`${now} T:${temperature} H:${humidity}`)
     await waitFor(1000)
   }
 }

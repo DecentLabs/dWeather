@@ -1,5 +1,5 @@
 const { Bus } = require('i2c-bus-promised')
-const { calcCrc8, DEVICE_ADDRESS, READ_TEMP, waitfor } = require('./utils.js')
+const { calcCrc8, DEVICE_ADDRESS, READ_TEMP, waitFor } = require('./utils.js')
 
 const bus = new Bus()
 
@@ -11,7 +11,7 @@ const readTemp = async () => {
   const data = Buffer.alloc(3)
   let temperature = 0
   await bus.write(DEVICE_ADDRESS, 1, Buffer.alloc([READ_TEMP]))
-  await waitfor(50)
+  await waitFor(50)
   await bus.read(DEVICE_ADDRESS, 3, data)
   if ((data.length === 3) && calcCrc8(data, 3)) {
     const rawtemp = ((data[0] << 8) | data[1]) & 0xFFFC
@@ -23,8 +23,11 @@ const readTemp = async () => {
 
 const main = async () => {
   await setup()
-  const temperature = await readTemp()
-  console.log('temp out', temperature)
+  while (true) {
+    const temperature = await readTemp()
+    console.log('temp out', temperature)
+    await waitFor(1000)
+  }
 }
 
 main()

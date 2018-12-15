@@ -20,18 +20,16 @@ const calcCrc8 = (buf, len) => {
   return (dataandcrc === 0)
 }
 
-const waitfor = ms => new Promise(resolve => {
+const waitFor = ms => new Promise(resolve => {
   setTimeout(() => resolve(), ms)
 })
 
-
-
 const DEVICE_ADDRESS = 0x40
-CONST READ_TEMP = 0xF3
+const READ_TEMP = 0xF3
 
 module.exports = {
   DEVICE_ADDRESS,
   calcCrc8,
-  waitfor,
+  waitFor,
   READ_TEMP
 }

@@ -8,18 +8,18 @@ const setup = async () => {
 }
 
 const readTemperature = async () => {
-  const sensorData = readSensor(bus, READ_TEMP)
+  const sensorData = await readSensor(bus, READ_TEMP)
   return ((sensorData / 65536.0) * 175.72) - 46.85
 }
 
 const readHumidity = async () => {
-  const sensorData = readSensor(bus, READ_HUMIDITY)
+  const sensorData = await readSensor(bus, READ_HUMIDITY)
   return ((sensorData / 65536.0) * 125.0) - 6.0
 }
 
 const main = async () => {
   await setup()
-  
+
   while (true) {
     const temperature = await readTemperature()
     const humidity = await readHumidity()

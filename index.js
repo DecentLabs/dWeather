@@ -10,7 +10,7 @@ const setup = async () => {
 const readTemp = async () => {
   const data = Buffer.alloc(3)
   let temperature = 0
-  await bus.write(DEVICE_ADDRESS, 1, Buffer.alloc([READ_TEMP]))
+  await bus.write(DEVICE_ADDRESS, 1, Buffer.from([READ_TEMP]))
   await waitFor(50)
   await bus.read(DEVICE_ADDRESS, 3, data)
   if ((data.length === 3) && calcCrc8(data, 3)) {

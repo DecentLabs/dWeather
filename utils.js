@@ -26,10 +26,11 @@ const waitFor = ms => new Promise(resolve => {
 
 const DEVICE_ADDRESS = 0x40
 const READ_TEMP = 0xF3
-
+const READ_HUMIDITY = 0xF5
 module.exports = {
   DEVICE_ADDRESS,
   calcCrc8,
   waitFor,
-  READ_TEMP
+  READ_TEMP,
+  READ_HUMIDITY
 }

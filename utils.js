@@ -24,6 +24,18 @@ const waitFor = ms => new Promise(resolve => {
   setTimeout(() => resolve(), ms)
 })
 
+const readSensor = async (bus, sensor) => {
+  const data = Buffer.alloc(3)
+  let sensorData = 0
+  await bus.write(DEVICE_ADDRESS, 1, Buffer.from([sensor]))
+  await waitFor(50)
+  await bus.read(DEVICE_ADDRESS, 3, data)
+  if ((data.length === 3) && calcCrc8(data, 3)) {
+    sensorData = ((data[0] << 8) | data[1]) & 0xFFFC
+  }
+  return sensorData
+}
+
 const DEVICE_ADDRESS = 0x40
 const READ_TEMP = 0xF3
 const READ_HUMIDITY = 0xF5
@@ -32,5 +44,6 @@ module.exports = {
   calcCrc8,
   waitFor,
   READ_TEMP,
-  READ_HUMIDITY
+  READ_HUMIDITY,
+  readSensor
 }

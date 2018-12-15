@@ -1,5 +1,5 @@
 const { Bus } = require('i2c-bus-promised')
-const { calcCrc8, DEVICE_ADDRESS, READ_TEMP, waitFor, READ_HUMIDITY } = require('./utils.js')
+const { READ_TEMP, waitFor, READ_HUMIDITY, readSensor } = require('./utils.js')
 
 const bus = new Bus()
 
@@ -8,34 +8,18 @@ const setup = async () => {
 }
 
 const readTemperature = async () => {
-  const data = Buffer.alloc(3)
-  let temperature = 0
-  await bus.write(DEVICE_ADDRESS, 1, Buffer.from([READ_TEMP]))
-  await waitFor(50)
-  await bus.read(DEVICE_ADDRESS, 3, data)
-  if ((data.length === 3) && calcCrc8(data, 3)) {
-    const rawtemp = ((data[0] << 8) | data[1]) & 0xFFFC
-    temperature = ((rawtemp / 65536.0) * 175.72) - 46.85
-  }
-
-  return temperature
+  const sensorData = readSensor(bus, READ_TEMP)
+  return ((sensorData / 65536.0) * 175.72) - 46.85
 }
 
 const readHumidity = async () => {
-  const data = Buffer.alloc(3)
-  let humidity = 0
-  await bus.write(DEVICE_ADDRESS, 1, Buffer.from([READ_HUMIDITY]))
-  await waitFor(50)
-  await bus.read(DEVICE_ADDRESS, 3, data)
-  if ((data.length === 3) && calcCrc8(data, 3)) {
-    const rawhumi = ((data[0] << 8) | data[1]) & 0xFFFC
-    humidity = ((rawhumi / 65536.0) * 125.0) - 6.0
-  }
-  return humidity
+  const sensorData = readSensor(bus, READ_HUMIDITY)
+  return ((sensorData / 65536.0) * 125.0) - 6.0
 }
 
 const main = async () => {
   await setup()
+  
   while (true) {
     const temperature = await readTemperature()
     const humidity = await readHumidity()

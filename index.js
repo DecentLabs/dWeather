@@ -1,32 +1,29 @@
 const { Bus } = require('i2c-bus-promised')
-const { READ_TEMP, waitFor, READ_HUMIDITY, readSensor } = require('./utils.js')
+const { READ_TEMP, READ_HUMIDITY, readSensor } = require('./utils.js')
 
 const bus = new Bus()
 
-const setup = async () => {
+const setup = async() => {
   await bus.open()
 }
 
-const readTemperature = async () => {
+const readTemperature = async() => {
   const sensorData = await readSensor(bus, READ_TEMP)
   return ((sensorData / 65536.0) * 175.72) - 46.85
 }
 
-const readHumidity = async () => {
+const readHumidity = async() => {
   const sensorData = await readSensor(bus, READ_HUMIDITY)
   return ((sensorData / 65536.0) * 125.0) - 6.0
 }
 
-const main = async () => {
+const main = async() => {
   await setup()
 
-  while (true) {
-    const temperature = await readTemperature()
-    const humidity = await readHumidity()
-    const now = Date.now()
-    console.log(`${now} T:${temperature} H:${humidity}`)
-    await waitFor(30000)
-  }
+  const temperature = await readTemperature()
+  const humidity = await readHumidity()
+  const now = Date.now()
+  console.log(`${now} T:${temperature} H:${humidity}`)
 }
 
 main()

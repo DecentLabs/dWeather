@@ -1,18 +1,14 @@
+const Room = require('ipfs-pubsub-room')
 const IPFS = require('ipfs')
 const MAIN_DIR = '/dweather'
 
 let __ipfs__ = null
 let TOPIC = ''
+let ROOM = null
 
 async function getIpfs() {
   if (!__ipfs__) {
     const ipfs = new IPFS({
-      relay: {
-        enabled: true, // enable relay dialer/listener (STOP)
-        hop: {
-          enabled: true // make this node a relay (HOP)
-        }
-      },
       EXPERIMENTAL: {
         pubsub: true // enable pubsub
       },
@@ -26,7 +22,10 @@ async function getIpfs() {
     })
 
     __ipfs__ = new Promise(resolve => {
-      ipfs.on('ready', () => resolve(ipfs))
+      ipfs.on('ready', () => {
+        ROOM = Room(ipfs, 'dweather_QmNUtGeomYCWtQpQkaDMWc2cMkhrsoYGEtFc17uAQHBKDJ')
+        resolve(ipfs)
+      })
     })
   }
   return __ipfs__
@@ -72,14 +71,8 @@ async function addItem(temp, humid, sensorId = 'main') {
   console.log('additem - write,', Date.now())
   const dir = await ipfs.files.stat(MAIN_DIR)
   await ipfs.files.flush()
-  if (TOPIC) {
-    ipfs.pubsub.publish(TOPIC, Buffer.from(dir.hash), (err) => {
-      if (err) {
-        return console.error(`failed to publish to ${TOPIC}`, err)
-      }
-      // msg was broadcasted
-      console.log('published: ', dir.hash, TOPIC)
-    })
+  if (ROOM) {
+    ROOM.broadcast(dir.hash)
   }
   return dir
 }

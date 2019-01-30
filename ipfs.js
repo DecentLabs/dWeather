@@ -1,42 +1,10 @@
-const IPFS = require('ipfs')
+const ipfsClient = require('ipfs-http-client');
+const ipfs = ipfsClient('/ip4/127.0.0.1/tcp/5001');
 const MAIN_DIR = '/dweather'
 
-let __ipfs__ = null
-let TOPIC = ''
-
-async function getIpfs() {
-  if (!__ipfs__) {
-    const ipfs = new IPFS({
-      relay: {
-        enabled: true, // enable relay dialer/listener (STOP)
-        hop: {
-          enabled: true // make this node a relay (HOP)
-        }
-      },
-      EXPERIMENTAL: {
-        pubsub: true // enable pubsub
-      },
-      config: {
-        Addresses: {
-          Swarm: [
-            '/dns4/ws-star.discovery.libp2p.io/tcp/443/wss/p2p-websocket-star'
-          ]
-        }
-      }
-    })
-
-    __ipfs__ = new Promise(resolve => {
-      ipfs.on('ready', () => resolve(ipfs))
-    })
-  }
-  return __ipfs__
-}
-
-
-
+let TOPIC = null
 
 async function openRoom() {
-  const ipfs = await getIpfs()
   const identity = await ipfs.id()
   const id = identity.id
 
@@ -47,7 +15,6 @@ async function openRoom() {
 
 
 async function addItem(temp, humid, sensorId = 'main') {
-  const ipfs = await getIpfs()
   const now = new Date()
   const year = now.getUTCFullYear()
   const month = (now.getUTCMonth() + 1).toString(10).padStart(2, '0')
@@ -84,7 +51,18 @@ async function addItem(temp, humid, sensorId = 'main') {
   return dir
 }
 
+async function write() {
+  const dir = await ipfs.files.ls('/dweather/')
+  console.log(dir)
+}
+
+
+async function stat() {
+
+}
+
 module.exports = {
   addItem,
+  write,
   openRoom
 }

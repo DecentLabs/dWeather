@@ -1,8 +1,53 @@
-const ipfsClient = require('ipfs-http-client');
-const ipfs = ipfsClient('/ip4/127.0.0.1/tcp/5001');
+const IPFS = require('ipfs')
 const MAIN_DIR = '/dweather'
 
+let __ipfs__ = null
+let TOPIC = ''
+
+async function getIpfs() {
+  if (!__ipfs__) {
+    const ipfs = new IPFS({
+      relay: {
+        enabled: true, // enable relay dialer/listener (STOP)
+        hop: {
+          enabled: true // make this node a relay (HOP)
+        }
+      },
+      EXPERIMENTAL: {
+        pubsub: true // enable pubsub
+      },
+      config: {
+        Addresses: {
+          Swarm: [
+            '/dns4/ws-star.discovery.libp2p.io/tcp/443/wss/p2p-websocket-star'
+          ]
+        }
+      }
+    })
+
+    __ipfs__ = new Promise(resolve => {
+      ipfs.on('ready', () => resolve(ipfs))
+    })
+  }
+  return __ipfs__
+}
+
+
+
+
+async function openRoom() {
+  const ipfs = await getIpfs()
+  const identity = await ipfs.id()
+  const id = identity.id
+
+  TOPIC = `dweather_${id}:root`
+  return TOPIC
+}
+
+
+
 async function addItem(temp, humid, sensorId = 'main') {
+  const ipfs = await getIpfs()
   const now = new Date()
   const year = now.getUTCFullYear()
   const month = (now.getUTCMonth() + 1).toString(10).padStart(2, '0')
@@ -11,14 +56,14 @@ async function addItem(temp, humid, sensorId = 'main') {
   const filename = `${MAIN_DIR}/${year}-${month}-${day}.txt`
   const line = Buffer.from(`${ts},${sensorId},${temp},${humid}\n`)
 
-  console.log(line.toString())
+  console.log(filename, line.toString())
 
   let stat = null
   try {
     stat = await ipfs.files.stat(filename)
   }
   catch (e) {
-    console.log(e)
+    console.log('create a new file')
     stat = { size: 0 }
   }
   console.log('additem - getStat,', Date.now())
@@ -26,11 +71,20 @@ async function addItem(temp, humid, sensorId = 'main') {
   const result = await ipfs.files.write(filename, line, { offset: stat.size, create: true, parents: true })
   console.log('additem - write,', Date.now())
   const dir = await ipfs.files.stat(MAIN_DIR)
-  console.log('additem - newname,', Date.now())
-  const name = dir.hash
-  return name
+  await ipfs.files.flush()
+  if (TOPIC) {
+    ipfs.pubsub.publish(TOPIC, Buffer.from(dir.hash), (err) => {
+      if (err) {
+        return console.error(`failed to publish to ${TOPIC}`, err)
+      }
+      // msg was broadcasted
+      console.log('published: ', dir.hash, TOPIC)
+    })
+  }
+  return dir
 }
 
 module.exports = {
-  addItem
+  addItem,
+  openRoom
 }

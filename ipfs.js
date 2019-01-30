@@ -9,6 +9,7 @@ let ROOM = null
 async function getIpfs() {
   if (!__ipfs__) {
     const ipfs = new IPFS({
+      repo: 'dweather',
       EXPERIMENTAL: {
         pubsub: true // enable pubsub
       },

@@ -2,16 +2,12 @@ const ipfsClient = require('ipfs-http-client');
 const ipfs = ipfsClient('/ip4/127.0.0.1/tcp/5001');
 const MAIN_DIR = '/dweather'
 
-let TOPIC = null
+let TOPIC = `dweather_robi`
 
-async function openRoom() {
-  const identity = await ipfs.id()
-  const id = identity.id
-
-  TOPIC = `dweather_${id}:root`
-  return TOPIC
+async function getId() {
+  const id = await ipfs.id()
+  console.log(id)
 }
-
 
 
 async function addItem(temp, humid, sensorId = 'main') {
@@ -40,20 +36,9 @@ async function addItem(temp, humid, sensorId = 'main') {
   const dir = await ipfs.files.stat(MAIN_DIR)
   await ipfs.files.flush()
   if (TOPIC) {
-    ipfs.pubsub.publish(TOPIC, Buffer.from(dir.hash), (err) => {
-      if (err) {
-        return console.error(`failed to publish to ${TOPIC}`, err)
-      }
-      // msg was broadcasted
-      console.log('published: ', dir.hash, TOPIC)
-    })
+    await ipfs.pubsub.publish(TOPIC, Buffer.from(dir.hash))
   }
   return dir
-}
-
-async function write() {
-  const dir = await ipfs.files.ls('/dweather/')
-  console.log(dir)
 }
 
 
@@ -62,7 +47,6 @@ async function stat() {
 }
 
 module.exports = {
-  addItem,
-  write,
-  openRoom
+  getId,
+  addItem
 }

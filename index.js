@@ -1,11 +1,11 @@
 const { logOnce } = require("./log.js")
 const { waitFor } = require("./utils.js")
-const { openRoom } = require("./ipfs.js")
+const { getId } = require("./ipfs.js")
 
 let RUNNING = true
 
 async function main() {
-  console.log(await openRoom())
+  await getId()
   while (RUNNING) {
     await logOnce()
     await waitFor(5000)

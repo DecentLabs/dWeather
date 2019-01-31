@@ -1,53 +1,16 @@
-const Room = require('ipfs-pubsub-room')
-const IPFS = require('ipfs')
+const ipfsClient = require('ipfs-http-client');
+const ipfs = ipfsClient('/ip4/127.0.0.1/tcp/5001');
 const MAIN_DIR = '/dweather'
 
-let __ipfs__ = null
-let TOPIC = ''
-let ROOM = null
+let TOPIC = `dweather_robi`
 
-async function getIpfs() {
-  if (!__ipfs__) {
-    const ipfs = new IPFS({
-      repo: 'dweather',
-      EXPERIMENTAL: {
-        pubsub: true // enable pubsub
-      },
-      config: {
-        Addresses: {
-          Swarm: [
-            '/dns4/ws-star.discovery.libp2p.io/tcp/443/wss/p2p-websocket-star'
-          ]
-        }
-      }
-    })
-
-    __ipfs__ = new Promise(resolve => {
-      ipfs.on('ready', () => {
-        ROOM = Room(ipfs, 'dweather_QmNUtGeomYCWtQpQkaDMWc2cMkhrsoYGEtFc17uAQHBKDJ')
-        resolve(ipfs)
-      })
-    })
-  }
-  return __ipfs__
+async function getId() {
+  const id = await ipfs.id()
+  console.log(id)
 }
-
-
-
-
-async function openRoom() {
-  const ipfs = await getIpfs()
-  const identity = await ipfs.id()
-  const id = identity.id
-
-  TOPIC = `dweather_${id}:root`
-  return TOPIC
-}
-
 
 
 async function addItem(temp, humid, sensorId = 'main') {
-  const ipfs = await getIpfs()
   const now = new Date()
   const year = now.getUTCFullYear()
   const month = (now.getUTCMonth() + 1).toString(10).padStart(2, '0')
@@ -72,13 +35,18 @@ async function addItem(temp, humid, sensorId = 'main') {
   console.log('additem - write,', Date.now())
   const dir = await ipfs.files.stat(MAIN_DIR)
   await ipfs.files.flush()
-  if (ROOM) {
-    ROOM.broadcast(dir.hash)
+  if (TOPIC) {
+    await ipfs.pubsub.publish(TOPIC, Buffer.from(dir.hash))
   }
   return dir
 }
 
+
+async function stat() {
+
+}
+
 module.exports = {
-  addItem,
-  openRoom
+  getId,
+  addItem
 }

@@ -4,17 +4,21 @@ const { openRoom } = require("./ipfs.js")
 
 let RUNNING = true
 
-async function main() {
-  console.log(await openRoom())
-  while (RUNNING) {
-    await logOnce()
-    await waitFor(5000)
-  }
+
+function main() {
+  return new Promise(async resolve => {
+    if (!RUNNING) {
+      resolve(true)
+    }
+    else {
+      await logOnce()
+      setTimeout(main, 5000)
+    }
+  })
 }
 
 
-
-main()
+openRoom().then(() => main())
   .then(() => process.exit(0))
   .catch((error) => {
     console.error(error.message)

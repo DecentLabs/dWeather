@@ -24,7 +24,7 @@ async function getIpfs() {
 
     __ipfs__ = new Promise(resolve => {
       ipfs.on('ready', () => {
-        ROOM = Room(ipfs, 'dweather_QmNUtGeomYCWtQpQkaDMWc2cMkhrsoYGEtFc17uAQHBKDJ')
+        ROOM = Room(ipfs, 'dweather_robi')
         resolve(ipfs)
       })
     })

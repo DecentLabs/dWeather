@@ -6,7 +6,7 @@ let __ipfs__ = null
 let TOPIC = ''
 let ROOM = null
 
-async function getIpfs() {
+function getIpfs() {
   if (!__ipfs__) {
     const ipfs = new IPFS({
       repo: 'dweather',

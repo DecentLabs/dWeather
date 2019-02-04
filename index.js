@@ -1,20 +1,14 @@
 const { logOnce } = require("./log.js")
-const { waitFor } = require("./utils.js")
 const { openRoom } = require("./ipfs.js")
-
+const { waitFor } = require("./utils.js")
 let RUNNING = true
 
 
-function main() {
-  return new Promise(async resolve => {
-    if (!RUNNING) {
-      resolve(true)
-    }
-    else {
-      await logOnce()
-      setTimeout(main, 5000)
-    }
-  })
+async function main() {
+  while (RUNNING) {
+    await logOnce()
+    await waitFor(15000)
+  }
 }
 
 

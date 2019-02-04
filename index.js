@@ -1,17 +1,17 @@
 const { logOnce } = require("./log.js")
 const { waitFor } = require("./utils.js")
-const { getId } = require("./ipfs.js")
-
+const { getIpfs, stopIpfs } = require('./ipfs.js')
 let RUNNING = true
 
+
 async function main() {
-  await getId()
+  const ipfs = await getIpfs()
   while (RUNNING) {
     await logOnce()
-    await waitFor(5000)
+    await waitFor(15000)
   }
+  return stopIpfs()
 }
-
 
 
 main()

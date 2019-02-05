@@ -5,10 +5,10 @@ let RUNNING = true
 
 
 async function main() {
-  const ipfs = await getIpfs()
+  await getIpfs()
   while (RUNNING) {
     await logOnce()
-    await waitFor(15000)
+    await waitFor(60000)
   }
   return stopIpfs()
 }
